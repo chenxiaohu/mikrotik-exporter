@@ -1,7 +1,7 @@
 package collector
 
 import (
-	"fmt"
+	// "fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -121,7 +121,9 @@ func parseUptime(uptime string) (float64, error) {
 
 	// should get one and only one match back on the regex
 	if len(reMatch) != 1 {
-		return 0, fmt.Errorf("invalid uptime value sent to regex")
+		// return 0, fmt.Errorf("invalid uptime value sent to regex")
+		return parseUptimePatch(uptime)
+		// return 1000.0, nil
 	}
 
 	for i, match := range reMatch[0] {
@@ -138,5 +140,69 @@ func parseUptime(uptime string) (float64, error) {
 			u += time.Duration(v) * uptimeParts[i-1]
 		}
 	}
+	return u.Seconds(), nil
+}
+
+func parseUptimePatch(uptime string) (float64, error) {
+	var u time.Duration
+
+	data := uptime
+
+	w := strings.IndexRune(data, 'w')
+	if w > 0 {
+		r := strings.Split(data, "w")
+		v, err := strconv.Atoi(r[0])
+		if err != nil {
+			return float64(0), err
+		}
+		u += time.Duration(v) * uptimeParts[0]
+		data = r[1]
+	}
+	d := strings.IndexRune(data, 'd')
+	if d > 0 {
+		r := strings.Split(data, "d")
+		v, err := strconv.Atoi(r[0])
+		if err != nil {
+			return float64(0), err
+		}
+		u += time.Duration(v) * uptimeParts[1]
+		// fmt.Println(v, r, u)
+		data = r[1]
+	}
+
+	r := strings.Split(data, ":")
+	for i, x := range r {
+		v, err := strconv.Atoi(x)
+		if err != nil {
+			return float64(0), err
+		}
+		u += time.Duration(v) * uptimeParts[i+2]
+
+		// fmt.Println(u)
+	}
+
+	// reMatch := uptimeRegex.FindAllStringSubmatch(uptime, -1)
+
+	// // should get one and only one match back on the regex
+	// if len(reMatch) != 1 {
+	// 	return 0, fmt.Errorf("invalid uptime value sent to regex")
+	// 	// return 1000.0, nil
+	// }
+
+	// for i, match := range reMatch[0] {
+	// 	if match != "" && i != 0 {
+	// 		v, err := strconv.Atoi(match)
+	// 		if err != nil {
+	// 			log.WithFields(log.Fields{
+	// 				"uptime": uptime,
+	// 				"value":  match,
+	// 				"error":  err,
+	// 			}).Error("error parsing uptime field value")
+	// 			return float64(0), err
+	// 		}
+	// 		u += time.Duration(v) * uptimeParts[i-1]
+	// 	}
+	// }
+
 	return u.Seconds(), nil
 }

@@ -2,6 +2,7 @@ package collector
 
 import (
 	"testing"
+	"time"
 )
 
 func TestParseUptime(t *testing.T) {
@@ -25,4 +26,13 @@ func TestParseUptime(t *testing.T) {
 			t.Errorf("seconds : %f != v : %f\n", seconds, uptime.v)
 		}
 	}
+}
+
+func TestParseUptimePatch(t *testing.T) {
+	d, _ := parseUptimePatch("2d01:41:03")
+
+	t.Log(d)
+
+	x := time.Duration(time.Hour * 48)
+	t.Log(x)
 }
